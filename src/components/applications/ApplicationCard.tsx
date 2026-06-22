@@ -16,7 +16,7 @@ export function ApplicationCard({ application }: ApplicationCardProps) {
 
   return (
     <Card
-      className="cursor-pointer rounded-xl border border-border p-3 transition-colors hover:border-zinc-600"
+      className="cursor-pointer rounded-xl border border-border p-3 transition-colors hover:border-muted-foreground/40"
       onClick={() => router.push(`/applications/${application.id}`)}
     >
       <div className="space-y-2">

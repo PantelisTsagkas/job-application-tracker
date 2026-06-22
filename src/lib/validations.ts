@@ -1,5 +1,14 @@
 import { z } from "zod";
 
+const optionalNumber = z
+  .union([z.literal(""), z.string(), z.number()])
+  .optional()
+  .transform((val) => {
+    if (val === "" || val === undefined) return undefined;
+    const num = typeof val === "string" ? Number(val) : val;
+    return Number.isNaN(num) ? undefined : num;
+  });
+
 export const applicationSchema = z.object({
   company: z.string().min(1, "Company name is required"),
   role: z.string().min(1, "Role is required"),
@@ -13,14 +22,15 @@ export const applicationSchema = z.object({
   ]),
   location: z.string().optional(),
   url: z.string().url("Must be a valid URL").optional().or(z.literal("")),
-  salaryMin: z.number().optional(),
-  salaryMax: z.number().optional(),
+  salaryMin: optionalNumber,
+  salaryMax: optionalNumber,
   description: z.string().optional(),
   appliedAt: z.date(),
   followUpAt: z.date().optional(),
 });
 
 export type ApplicationFormValues = z.infer<typeof applicationSchema>;
+export type ApplicationFormInput = z.input<typeof applicationSchema>;
 
 // Schema for API input (accepts date strings and coerces numbers)
 export const applicationApiSchema = z.object({

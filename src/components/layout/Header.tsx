@@ -4,8 +4,18 @@ import { Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 
+const THEME_KEY = "theme";
+
 export function Header({ title }: { title?: string }) {
   const [dark, setDark] = useState(true);
+
+  useEffect(() => {
+    // Reading localStorage on mount (not in the initializer) so the first
+    // client render matches the server-rendered markup and avoids a
+    // hydration mismatch.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setDark((localStorage.getItem(THEME_KEY) ?? "dark") === "dark");
+  }, []);
 
   useEffect(() => {
     const html = document.documentElement;
@@ -14,6 +24,7 @@ export function Header({ title }: { title?: string }) {
     } else {
       html.classList.remove("dark");
     }
+    localStorage.setItem(THEME_KEY, dark ? "dark" : "light");
   }, [dark]);
 
   return (

@@ -2,7 +2,11 @@
 
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { applicationSchema, ApplicationFormValues } from "@/lib/validations";
+import {
+  applicationSchema,
+  ApplicationFormValues,
+  ApplicationFormInput,
+} from "@/lib/validations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -37,7 +41,7 @@ export function ApplicationForm({
   onSubmit,
   isLoading,
 }: ApplicationFormProps) {
-  const form = useForm<ApplicationFormValues>({
+  const form = useForm<ApplicationFormInput, unknown, ApplicationFormValues>({
     resolver: zodResolver(applicationSchema),
     defaultValues: {
       company: application?.company ?? "",
