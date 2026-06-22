@@ -1,10 +1,19 @@
 "use client";
 
 import { useDroppable } from "@dnd-kit/core";
-import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { ApplicationCard } from "./ApplicationCard";
 import { STATUS_CONFIG, StatusKey } from "@/types";
 import type { Application } from "@/types";
+import { cn } from "@/lib/utils";
+
+const STATUS_DOT_COLORS: Record<string, string> = {
+  blue: "#3b82f6",
+  yellow: "#eab308",
+  orange: "#f97316",
+  green: "#22c55e",
+  red: "#ef4444",
+  gray: "#6b7280",
+};
 
 interface KanbanColumnProps {
   status: StatusKey;
@@ -13,26 +22,16 @@ interface KanbanColumnProps {
 
 export function KanbanColumn({ status, applications }: KanbanColumnProps) {
   const config = STATUS_CONFIG[status];
-  const { setNodeRef } = useDroppable({ id: status });
+  const { setNodeRef, isOver } = useDroppable({ id: status });
 
   return (
     <div className="flex min-w-0 flex-col rounded-xl border border-border bg-card">
       <div className="flex items-center gap-2 border-b border-border px-4 py-3">
         <div
-          className={`h-2.5 w-2.5 rounded-full`}
+          className="h-2.5 w-2.5 rounded-full"
           style={{
             backgroundColor:
-              config.color === "blue"
-                ? "#3b82f6"
-                : config.color === "yellow"
-                ? "#eab308"
-                : config.color === "orange"
-                ? "#f97316"
-                : config.color === "green"
-                ? "#22c55e"
-                : config.color === "red"
-                ? "#ef4444"
-                : "#6b7280",
+              STATUS_DOT_COLORS[config.color] ?? STATUS_DOT_COLORS.gray,
           }}
         />
         <span className="text-sm font-medium">{config.label}</span>
@@ -42,16 +41,25 @@ export function KanbanColumn({ status, applications }: KanbanColumnProps) {
       </div>
       <div
         ref={setNodeRef}
-        className="flex flex-1 flex-col gap-2 overflow-y-auto p-3 min-h-[200px]"
+        className={cn(
+          "flex min-h-[200px] flex-1 flex-col gap-2 overflow-y-auto p-3 transition-colors",
+          isOver && "bg-primary/5 ring-2 ring-inset ring-primary/20"
+        )}
       >
-        <SortableContext
-          items={applications.map((a) => a.id)}
-          strategy={verticalListSortingStrategy}
-        >
-          {applications.map((app) => (
-            <ApplicationCard key={app.id} application={app} />
-          ))}
-        </SortableContext>
+        {applications.length === 0 ? (
+          <p
+            className={cn(
+              "flex flex-1 items-center justify-center rounded-lg border border-dashed border-border px-3 py-8 text-center text-xs text-muted-foreground",
+              isOver && "border-primary/40 text-primary/80"
+            )}
+          >
+            Drop here
+          </p>
+        ) : (
+          applications.map((app) => (
+            <ApplicationCard key={app.id} application={app} draggable />
+          ))
+        )}
       </div>
     </div>
   );

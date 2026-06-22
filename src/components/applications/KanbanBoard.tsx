@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   DndContext,
   DragEndEvent,
   DragOverEvent,
+  DragOverlay,
+  DragStartEvent,
   PointerSensor,
   useSensor,
   useSensors,
@@ -12,7 +14,7 @@ import {
 import { KanbanColumn } from "./KanbanColumn";
 import { ApplicationCard } from "./ApplicationCard";
 import { toast } from "sonner";
-import type { Application, StatusKey } from "@/types";
+import { STATUS_CONFIG, type Application, type StatusKey } from "@/types";
 
 const BOARD_STATUSES: StatusKey[] = [
   "APPLIED",
@@ -21,95 +23,122 @@ const BOARD_STATUSES: StatusKey[] = [
   "OFFER",
 ];
 const ARCHIVED_STATUSES: StatusKey[] = ["REJECTED", "WITHDRAWN"];
+const DROP_STATUSES: StatusKey[] = [...BOARD_STATUSES, ...ARCHIVED_STATUSES];
 
 interface KanbanBoardProps {
   applications: Application[];
   onStatusChange: (id: string, newStatus: StatusKey) => void;
 }
 
+function resolveDropStatus(
+  overId: string,
+  items: Application[]
+): StatusKey | null {
+  if (DROP_STATUSES.includes(overId as StatusKey)) {
+    return overId as StatusKey;
+  }
+
+  const overApp = items.find((app) => app.id === overId);
+  return overApp?.status ?? null;
+}
+
 export function KanbanBoard({ applications, onStatusChange }: KanbanBoardProps) {
   const [items, setItems] = useState(applications);
-  const [showArchived, setShowArchived] = useState(false);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [dragSnapshot, setDragSnapshot] = useState<Application[] | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
   );
 
-  // Keep items in sync with props
-  if (applications !== items && applications.length !== items.length) {
+  useEffect(() => {
+    // Re-sync when the parent list changes (filters, deletes, etc.)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setItems(applications);
-  }
+  }, [applications]);
 
   const getApplicationsByStatus = (status: StatusKey) =>
     items.filter((app) => app.status === status);
 
-  const archivedApps = items.filter((app) =>
-    ARCHIVED_STATUSES.includes(app.status)
-  );
+  const activeApplication = activeId
+    ? items.find((app) => app.id === activeId)
+    : undefined;
+
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as string);
+    setDragSnapshot(items);
+  };
 
   const handleDragOver = (event: DragOverEvent) => {
     const { active, over } = event;
     if (!over) return;
 
     const activeId = active.id as string;
-    const overId = over.id as string;
-
-    // Check if we're over a column (status)
-    const isOverColumn = BOARD_STATUSES.includes(overId as StatusKey);
-    if (!isOverColumn) return;
+    const newStatus = resolveDropStatus(over.id as string, items);
+    if (!newStatus) return;
 
     const activeApp = items.find((app) => app.id === activeId);
-    if (!activeApp || activeApp.status === overId) return;
+    if (!activeApp || activeApp.status === newStatus) return;
 
     setItems((prev) =>
       prev.map((app) =>
-        app.id === activeId ? { ...app, status: overId as StatusKey } : app
+        app.id === activeId ? { ...app, status: newStatus } : app
       )
     );
   };
 
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
-    if (!over) return;
+    const draggedId = active.id as string;
+    const originalApp = dragSnapshot?.find((app) => app.id === draggedId);
+    const newStatus = over
+      ? resolveDropStatus(over.id as string, items)
+      : null;
 
-    const activeId = active.id as string;
-    const overId = over.id as string;
+    setActiveId(null);
+    setDragSnapshot(null);
 
-    const isOverColumn = BOARD_STATUSES.includes(overId as StatusKey);
-    const activeApp = items.find((app) => app.id === activeId);
-
-    if (!activeApp) return;
-
-    let newStatus: StatusKey | null = null;
-
-    if (isOverColumn && activeApp.status !== overId) {
-      newStatus = overId as StatusKey;
+    if (!over || !originalApp || !newStatus) {
+      setItems(applications);
+      return;
     }
 
-    if (newStatus) {
-      try {
-        const res = await fetch(`/api/applications/${activeId}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status: newStatus }),
-        });
-        if (!res.ok) throw new Error("Failed to update status");
-        toast.success(`Moved to ${newStatus.replace("_", " ").toLowerCase()}`);
-        onStatusChange(activeId, newStatus);
-      } catch {
-        // Revert on failure
-        setItems(applications);
-        toast.error("Failed to update status");
-      }
+    if (originalApp.status === newStatus) {
+      setItems(applications);
+      return;
     }
+
+    try {
+      const res = await fetch(`/api/applications/${draggedId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      if (!res.ok) throw new Error("Failed to update status");
+
+      toast.success(`Moved to ${STATUS_CONFIG[newStatus].label.toLowerCase()}`);
+      onStatusChange(draggedId, newStatus);
+    } catch {
+      setItems(dragSnapshot ?? applications);
+      toast.error("Failed to update status");
+    }
+  };
+
+  const handleDragCancel = () => {
+    const snapshot = dragSnapshot;
+    setActiveId(null);
+    setDragSnapshot(null);
+    setItems(snapshot ?? applications);
   };
 
   return (
     <div className="space-y-6">
       <DndContext
         sensors={sensors}
+        onDragStart={handleDragStart}
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
+        onDragCancel={handleDragCancel}
       >
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {BOARD_STATUSES.map((status) => (
@@ -120,25 +149,26 @@ export function KanbanBoard({ applications, onStatusChange }: KanbanBoardProps) 
             />
           ))}
         </div>
-      </DndContext>
 
-      {archivedApps.length > 0 && (
-        <div>
-          <button
-            onClick={() => setShowArchived(!showArchived)}
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            {showArchived ? "Hide" : "Show"} archived ({archivedApps.length})
-          </button>
-          {showArchived && (
-            <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
-              {archivedApps.map((app) => (
-                <ApplicationCard key={app.id} application={app} />
-              ))}
-            </div>
-          )}
+        <div className="space-y-3">
+          <p className="text-sm font-medium text-muted-foreground">Archived</p>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {ARCHIVED_STATUSES.map((status) => (
+              <KanbanColumn
+                key={status}
+                status={status}
+                applications={getApplicationsByStatus(status)}
+              />
+            ))}
+          </div>
         </div>
-      )}
+
+        <DragOverlay dropAnimation={null}>
+          {activeApplication ? (
+            <ApplicationCard application={activeApplication} overlay />
+          ) : null}
+        </DragOverlay>
+      </DndContext>
     </div>
   );
 }
