@@ -93,6 +93,26 @@ A full-stack web application to track and manage job applications throughout the
 
    Open [http://localhost:3000](http://localhost:3000)
 
+### Demo data (optional)
+
+For screenshots or demos, seed realistic sample applications after signing in once:
+
+```bash
+pnpm seed
+```
+
+Replace existing applications:
+
+```bash
+pnpm seed -- --fresh
+```
+
+Target a specific account:
+
+```bash
+pnpm seed -- --email you@example.com
+```
+
 ## Scripts
 
 | Command | Description |
@@ -101,6 +121,7 @@ A full-stack web application to track and manage job applications throughout the
 | `pnpm build` | Build for production |
 | `pnpm start` | Start production server |
 | `pnpm lint` | Run ESLint |
+| `pnpm seed` | Seed demo applications for the signed-in user |
 
 ## Project Structure
 

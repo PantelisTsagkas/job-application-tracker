@@ -11,6 +11,10 @@ try {
 
 export default defineConfig({
   schema: path.join(__dirname, "prisma", "schema.prisma"),
+  migrations: {
+    path: path.join(__dirname, "prisma", "migrations"),
+    seed: "tsx prisma/seed.ts",
+  },
   datasource: {
     // Use process.env directly rather than Prisma's env() helper: env() throws
     // if the var is missing, which would break `prisma generate` (run on
