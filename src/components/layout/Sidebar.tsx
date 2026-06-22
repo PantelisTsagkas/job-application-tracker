@@ -2,8 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Briefcase, LayoutDashboard, FileText, Settings, LogOut } from "lucide-react";
+import {
+  Briefcase,
+  LayoutDashboard,
+  FileText,
+  Settings,
+  LogOut,
+} from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { useSidebar } from "@/components/layout/sidebar-context";
 import { signOut } from "next-auth/react";
 
 const navItems = [
@@ -12,19 +20,27 @@ const navItems = [
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
-interface SidebarProps {
-  user: {
-    name?: string | null;
-    email?: string | null;
-    image?: string | null;
-  };
+interface SidebarUser {
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
 }
 
-export function Sidebar({ user }: SidebarProps) {
+interface SidebarProps {
+  user: SidebarUser;
+}
+
+function SidebarContent({
+  user,
+  onNavigate,
+}: {
+  user: SidebarUser;
+  onNavigate?: () => void;
+}) {
   const pathname = usePathname();
 
   return (
-    <aside className="fixed left-0 top-0 z-40 flex h-screen w-[240px] flex-col border-r border-sidebar-border bg-sidebar">
+    <>
       <div className="flex items-center gap-2 px-6 py-5">
         <Briefcase className="h-6 w-6 text-indigo-500" />
         <span className="text-lg font-semibold text-sidebar-foreground">
@@ -42,6 +58,7 @@ export function Sidebar({ user }: SidebarProps) {
             <Link
               key={item.href}
               href={item.href}
+              onClick={onNavigate}
               className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                 isActive
                   ? "bg-sidebar-accent text-sidebar-accent-foreground"
@@ -63,7 +80,7 @@ export function Sidebar({ user }: SidebarProps) {
               {user.name?.charAt(0)?.toUpperCase() ?? "U"}
             </AvatarFallback>
           </Avatar>
-          <div className="flex-1 min-w-0">
+          <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-medium text-sidebar-foreground">
               {user.name}
             </p>
@@ -80,6 +97,31 @@ export function Sidebar({ user }: SidebarProps) {
           </button>
         </div>
       </div>
-    </aside>
+    </>
+  );
+}
+
+export function Sidebar({ user }: SidebarProps) {
+  const sidebar = useSidebar();
+  const closeMobile = () => sidebar?.setMobileOpen(false);
+
+  return (
+    <>
+      <aside className="fixed top-0 left-0 z-40 hidden h-screen w-[240px] flex-col border-r border-sidebar-border bg-sidebar md:flex">
+        <SidebarContent user={user} />
+      </aside>
+
+      <Sheet
+        open={sidebar?.mobileOpen ?? false}
+        onOpenChange={(open) => sidebar?.setMobileOpen(open)}
+      >
+        <SheetContent
+          side="left"
+          className="flex w-[240px] max-w-[85vw] flex-col gap-0 border-sidebar-border bg-sidebar p-0 text-sidebar-foreground"
+        >
+          <SidebarContent user={user} onNavigate={closeMobile} />
+        </SheetContent>
+      </Sheet>
+    </>
   );
 }
