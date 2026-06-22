@@ -58,7 +58,7 @@ export default async function DashboardPage() {
       <Header title="Dashboard" />
       <StatsGrid stats={stats} />
 
-      <div className="rounded-xl border border-border p-6">
+      <div className="min-w-0 rounded-xl border border-border p-6">
         <h2 className="mb-4 text-lg font-semibold">Applications (Last 30 days)</h2>
         <ApplicationsChart
           applications={applications.map((a) => ({
