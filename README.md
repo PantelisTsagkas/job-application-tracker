@@ -51,27 +51,33 @@ A full-stack web application to track and manage job applications throughout the
    pnpm install
    ```
 
-3. **Set up environment variables**
+3. **Create a GitHub OAuth App**
+
+   Register one at [github.com/settings/applications/new](https://github.com/settings/applications/new) with:
+   - Homepage URL: `http://localhost:3000`
+   - Authorization callback URL: `http://localhost:3000/api/auth/callback/github`
+
+   Note the Client ID and generate a Client Secret — GitHub OAuth Apps only support one callback URL, so use a separate app for local dev vs. production.
+
+4. **Set up environment variables**
 
    Create a `.env.local` file:
 
    ```env
    DATABASE_URL="postgresql://..."
-   NEXTAUTH_SECRET="your-secret"
-   NEXTAUTH_URL="http://localhost:3000"
+   AUTH_SECRET="..."   # generate with: openssl rand -base64 32
 
-   # OAuth provider (e.g., GitHub)
-   AUTH_GITHUB_ID="..."
-   AUTH_GITHUB_SECRET="..."
+   GITHUB_ID="..."
+   GITHUB_SECRET="..."
    ```
 
-4. **Push the schema to your database**
+5. **Push the schema to your database**
 
    ```bash
    npx prisma db push
    ```
 
-5. **Run the dev server**
+6. **Run the dev server**
 
    ```bash
    pnpm dev

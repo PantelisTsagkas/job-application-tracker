@@ -111,7 +111,7 @@ export function KanbanBoard({ applications, onStatusChange }: KanbanBoardProps) 
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
       >
-        <div className="flex gap-4 overflow-x-auto pb-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {BOARD_STATUSES.map((status) => (
             <KanbanColumn
               key={status}

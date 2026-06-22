@@ -16,7 +16,7 @@ export function KanbanColumn({ status, applications }: KanbanColumnProps) {
   const { setNodeRef } = useDroppable({ id: status });
 
   return (
-    <div className="flex w-[280px] flex-shrink-0 flex-col rounded-xl border border-border bg-card">
+    <div className="flex min-w-0 flex-col rounded-xl border border-border bg-card">
       <div className="flex items-center gap-2 border-b border-border px-4 py-3">
         <div
           className={`h-2.5 w-2.5 rounded-full`}
