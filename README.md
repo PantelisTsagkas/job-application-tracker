@@ -4,14 +4,14 @@ A full-stack web application to track and manage job applications throughout the
 
 ## Features
 
-- **Dashboard** — Overview with stats and charts showing application progress
-- **Application Management** — Add, edit, and delete job applications
-- **Kanban Board** — Drag-and-drop board to visually manage application stages
-- **Table View** — Sortable, filterable table for quick scanning
-- **Status Tracking** — Track applications through: Applied → Phone Screen → Interviewing → Offer / Rejected / Withdrawn
-- **Notes** — Add notes to each application for interview prep and follow-ups
-- **Authentication** — Secure sign-in with NextAuth.js
-- **Dark Mode** — Full dark mode support
+- **Dashboard**: overview with stats and charts showing application progress
+- **Application Management**: add, edit, and delete job applications
+- **Kanban Board**: drag-and-drop board to visually manage application stages
+- **Table View**: sortable, filterable table for quick scanning
+- **Status Tracking**: track applications through Applied → Phone Screen → Interviewing → Offer / Rejected / Withdrawn
+- **Notes**: add notes to each application for interview prep and follow-ups
+- **Authentication**: sign in with GitHub or Google via NextAuth.js
+- **Dark Mode**: full light and dark mode support
 
 ## Tech Stack
 
@@ -32,9 +32,9 @@ A full-stack web application to track and manage job applications throughout the
 
 ### Prerequisites
 
-- Node.js 18+
+- Node.js 20.19+ (required by Prisma 7 and Next.js 16)
 - pnpm
-- A PostgreSQL database (e.g., [Neon](https://neon.tech))
+- A PostgreSQL database (e.g. [Neon](https://neon.tech))
 
 ### Setup
 
@@ -51,17 +51,22 @@ A full-stack web application to track and manage job applications throughout the
    pnpm install
    ```
 
-3. **Create a GitHub OAuth App**
+3. **Set up at least one OAuth provider**
 
-   Register one at [github.com/settings/applications/new](https://github.com/settings/applications/new) with:
+   **GitHub** (at [github.com/settings/applications/new](https://github.com/settings/applications/new)):
    - Homepage URL: `http://localhost:3000`
    - Authorization callback URL: `http://localhost:3000/api/auth/callback/github`
 
-   Note the Client ID and generate a Client Secret — GitHub OAuth Apps only support one callback URL, so use a separate app for local dev vs. production.
+   GitHub OAuth Apps allow only one callback URL, so create a separate app for production.
+
+   **Google** (at [Google Cloud Console](https://console.cloud.google.com/apis/credentials), create an OAuth client ID):
+   - Authorized redirect URI: `http://localhost:3000/api/auth/callback/google`
+
+   A single Google client supports multiple redirect URIs, so the same one works for local and production.
 
 4. **Set up environment variables**
 
-   Create a `.env.local` file:
+   Create a `.env.local` file. `DATABASE_URL` and `AUTH_SECRET` are required, plus the credentials for whichever provider(s) you configured:
 
    ```env
    DATABASE_URL="postgresql://..."
@@ -69,6 +74,9 @@ A full-stack web application to track and manage job applications throughout the
 
    GITHUB_ID="..."
    GITHUB_SECRET="..."
+
+   GOOGLE_ID="..."
+   GOOGLE_SECRET="..."
    ```
 
 5. **Push the schema to your database**
