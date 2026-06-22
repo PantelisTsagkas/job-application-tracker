@@ -17,13 +17,18 @@ import { toast } from "sonner";
 export function DeleteAccountButton() {
   const [open, setOpen] = useState(false);
 
+  const [deleting, setDeleting] = useState(false);
+
   const handleDelete = async () => {
+    setDeleting(true);
     try {
-      // In a real app, you'd call a DELETE /api/user endpoint
+      const res = await fetch("/api/user", { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed to delete account");
       toast.success("Account deleted");
       await signOut({ callbackUrl: "/login" });
     } catch {
       toast.error("Failed to delete account");
+      setDeleting(false);
     }
   };
 
@@ -41,11 +46,19 @@ export function DeleteAccountButton() {
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)}>
+          <Button
+            variant="outline"
+            onClick={() => setOpen(false)}
+            disabled={deleting}
+          >
             Cancel
           </Button>
-          <Button variant="destructive" onClick={handleDelete}>
-            Yes, delete my account
+          <Button
+            variant="destructive"
+            onClick={handleDelete}
+            disabled={deleting}
+          >
+            {deleting ? "Deleting..." : "Yes, delete my account"}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -70,7 +70,15 @@ export async function DELETE(
     );
   }
 
-  await prisma.note.delete({ where: { id: noteId } });
+  // Scope the delete to a note that belongs to this (already ownership-checked)
+  // application, so a user can't delete another user's note by guessing its ID.
+  const result = await prisma.note.deleteMany({
+    where: { id: noteId, applicationId: id },
+  });
+
+  if (result.count === 0) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
 
   return NextResponse.json({ success: true });
 }

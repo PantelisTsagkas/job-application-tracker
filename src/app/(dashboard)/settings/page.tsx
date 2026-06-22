@@ -22,7 +22,7 @@ export default async function SettingsPage() {
         <CardContent className="flex items-center gap-4">
           <Avatar className="h-16 w-16">
             <AvatarImage src={user.image ?? undefined} alt={user.name ?? ""} />
-            <AvatarFallback className="bg-zinc-700 text-lg text-white">
+            <AvatarFallback className="bg-muted text-lg text-foreground">
               {user.name?.charAt(0)?.toUpperCase() ?? "U"}
             </AvatarFallback>
           </Avatar>
