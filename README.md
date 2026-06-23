@@ -1,6 +1,34 @@
 # Job Application Tracker
 
+[![Live Demo](https://img.shields.io/badge/Live_Demo-job--application--tracker.vercel.app-black?logo=vercel)](https://job-application-tracker.vercel.app)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Prisma](https://img.shields.io/badge/Prisma-7-2D3748?logo=prisma&logoColor=white)](https://www.prisma.io/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-38B2AC?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+
 A full-stack web application to track and manage job applications throughout the hiring process. Built with Next.js 16, React 19, and PostgreSQL.
+
+## Screenshots
+
+### Landing page
+
+Sign in with GitHub or Google — no passwords stored by the app.
+
+![Landing page](./docs/screenshots/landing_page.png)
+
+| Dashboard | Kanban board |
+| :---: | :---: |
+| ![Dashboard](./docs/screenshots/dashboard.png) | ![Kanban board](./docs/screenshots/kanban_board.png) |
+
+| List view | New application |
+| :---: | :---: |
+| ![List view](./docs/screenshots/list_view.png) | ![New application](./docs/screenshots/new_application.png) |
+
+| Application detail | Settings |
+| :---: | :---: |
+| ![Application detail](./docs/screenshots/individual_application_info.png) | ![Settings — delete account](./docs/screenshots/delete_account.png) |
 
 ## Features
 
